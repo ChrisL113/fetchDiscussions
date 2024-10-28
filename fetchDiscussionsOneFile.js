@@ -12,8 +12,6 @@ const { env } = require("process")
     repositoryName: process.env.REPOSITORYNAME,
     repositoryOwner: process.env.REPOSITORYOWNER,
   }
-  const repositoryOwner = "nubedianGmbH" // Replace with the repository owner's username
-  const repositoryName = "caseform" // Replace with the repository name
 
   const graphQLClient = new GraphQLClient(endpoint, {
     headers: {
