@@ -1,0 +1,5 @@
+discussions_by_category/
+node_modules/
+
+discussions.json
+.env
