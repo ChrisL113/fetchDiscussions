@@ -1,13 +1,17 @@
-const { env } = require("process");
+const { env } = require("process")
 
 ;(async () => {
   const { GraphQLClient, gql } = await import("graphql-request")
-  const fs = require('fs');
+  const fs = require("fs")
   const dotenv = require("dotenv")
   dotenv.config()
 
   const endpoint = "https://api.github.com/graphql"
-  const config = { token: process.env.TOKEN }
+  const config = {
+    token: process.env.TOKEN,
+    repositoryName: process.env.REPOSITORYNAME,
+    repositoryOwner: process.env.REPOSITORYOWNER,
+  }
   const repositoryOwner = "nubedianGmbH" // Replace with the repository owner's username
   const repositoryName = "caseform" // Replace with the repository name
 
@@ -19,7 +23,7 @@ const { env } = require("process");
 
   const query = gql`
   query($after: String) {
-    repository(owner: "${repositoryOwner}", name: "${repositoryName}") {
+    repository(owner: "${config.repositoryOwner}", name: "${config.repositoryName}") {
       discussions(first: 100, after: $after) {
         edges {
           node {
