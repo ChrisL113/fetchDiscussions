@@ -29,11 +29,27 @@ install the dependencies
 ```
 npm i
 ```
+### Search on discussions
 
 then finally run one of the 2 scripts with node, i.e.:
 
 ```
 node fetchDiscussions.js
+
+```
+it will download all the discussions from your selected repo in files separated by category
+
+or 
+```
+node fetchDiscussionsOneFile
 ```
 
-it will download all the discussions from your selected repo
+it will download all the discussions from your selected repo in a single file
+
+### Search on json a word
+
+```
+node node fetchWordOnDiscussions.js -w wordThatYouWantToSearch
+```
+
+it will search on title and description of the discussions
