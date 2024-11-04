@@ -4,6 +4,7 @@ const folderPath = "./discussions_by_category"
 
 const args = process.argv.slice(2)
 let wordToSearch = null
+let searchInComments = false
 function showHelp() {
   console.log(`
 Usage:
@@ -11,6 +12,7 @@ Usage:
 Options:
   -w <word>    Specify the word to search for in "title" and "bodytext" fields.
   -h           Show this help message.
+  -c           Enable search in the comments
 `)
 }
 for (let i = 0; i < args.length; i++) {
@@ -21,7 +23,11 @@ for (let i = 0; i < args.length; i++) {
     showHelp()
     process.exit(0)
   }
+  if (args[i] === "-c") {
+    searchInComments = true
+  }
 }
+
 if (!wordToSearch) {
   console.error(
     'Error: Please provide a word to search for using the "-w" flag.'
@@ -30,7 +36,7 @@ if (!wordToSearch) {
   process.exit(1)
 }
 
-function searchWordInJson(jsonArray, word) {
+function searchWordInJson(jsonArray, word, searchComments) {
   const lowerCaseWord = word.toLowerCase()
 
   return jsonArray.filter(item => {
@@ -38,10 +44,21 @@ function searchWordInJson(jsonArray, word) {
       item.title && item.title.toLowerCase().includes(lowerCaseWord)
     const bodytextContainsWord =
       item.bodyText && item.bodyText.toLowerCase().includes(lowerCaseWord)
-    return titleContainsWord || bodytextContainsWord
+    let commentsContainWord = false
+    if (
+      searchComments &&
+      item.comments.edges &&
+      Array.isArray(item.comments.edges)
+    ) {
+      commentsContainWord = item.comments.edges.some(comment => {
+        return comment.node.bodyText.toLowerCase().includes(lowerCaseWord)
+      })
+    }
+
+    return titleContainsWord || bodytextContainsWord || commentsContainWord
   })
 }
-function searchWordInFolder(folderPath, word) {
+function searchWordInFolder(folderPath, word, searchComments) {
   const results = []
   fs.readdirSync(folderPath).forEach(file => {
     if (path.extname(file) === ".json") {
@@ -50,7 +67,7 @@ function searchWordInFolder(folderPath, word) {
       try {
         const jsonData = JSON.parse(fileContent)
 
-        const matchedItems = searchWordInJson(jsonData, word)
+        const matchedItems = searchWordInJson(jsonData, word, searchComments)
         if (matchedItems.length > 0) {
           results.push(...matchedItems)
         }
@@ -61,10 +78,14 @@ function searchWordInFolder(folderPath, word) {
   })
   return results
 }
-const searchResults = searchWordInFolder(folderPath, wordToSearch)
+const searchResults = searchWordInFolder(
+  folderPath,
+  wordToSearch,
+  searchInComments
+)
 const mapped = searchResults.map(item => ({
   title: item.title,
   url: item.url,
-  category: item.category.name
+  category: item.category.name,
 }))
 console.log(mapped)
