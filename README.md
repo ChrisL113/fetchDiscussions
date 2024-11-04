@@ -46,10 +46,10 @@ node fetchDiscussionsOneFile
 
 it will download all the discussions from your selected repo in a single file
 
-### Search on json a word
+### Search on json a pattern
 
 ```
-node node fetchWordOnDiscussions.js -w wordThatYouWantToSearch
+node fetchPatternOnDiscussions.js -p patternThatYouWantToSearch
 ```
 
 it will search on title and description of the discussions
