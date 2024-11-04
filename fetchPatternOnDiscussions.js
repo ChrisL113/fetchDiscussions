@@ -5,26 +5,30 @@ const folderPath = "./discussions_by_category"
 const args = process.argv.slice(2)
 let patternToSearch = null
 let searchInComments = false
+let categoryToFilter = null
 function showHelp() {
   console.log(`
 Usage:
   node searchScript.js -p <pattern>
 Options:
-  -p <pattern>  Specify the pattern to search for in "title" and "bodytext" fields.
-  -h            Show this help message.
-  -c            Enable search in the comments
+  -p <pattern>     Specify the pattern to search for in "title" and "bodytext" fields.
+  -cat <category>  Limit Search to items within a category in specific.
+  -h               Show this help message.
+  -c               Enable search in the comments
 `)
 }
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "-p" && args[i + 1]) {
     patternToSearch = args[i + 1]
     i++
+  } else if (args[i] === "-cat" && args[i + 1]) {
+    categoryToFilter = args[i + 1]
+    i++
+  } else if (args[i] === "-c") {
+    searchInComments = true
   } else if (args[i] === "-h") {
     showHelp()
     process.exit(0)
-  }
-  if (args[i] === "-c") {
-    searchInComments = true
   }
 }
 
@@ -36,10 +40,14 @@ if (!patternToSearch) {
   process.exit(1)
 }
 
-function searchPatternInJson(jsonArray, pattern, searchComments) {
+function searchPatternInJson(jsonArray, pattern, searchComments, category) {
   const lowerCasePattern = pattern.toLowerCase()
 
   return jsonArray.filter(item => {
+    if (category && !item.category.name.toLowerCase().includes(category)) {
+      return
+    }
+
     const titleContainsPattern =
       item.title && item.title.toLowerCase().includes(lowerCasePattern)
     const bodytextContainsPattern =
@@ -55,10 +63,12 @@ function searchPatternInJson(jsonArray, pattern, searchComments) {
       })
     }
 
-    return titleContainsPattern || bodytextContainsPattern || commentsContainPattern
+    return (
+      titleContainsPattern || bodytextContainsPattern || commentsContainPattern
+    )
   })
 }
-function searchPatternInFolder(folderPath, pattern, searchComments) {
+function searchPatternInFolder(folderPath, pattern, searchComments, category) {
   const results = []
   fs.readdirSync(folderPath).forEach(file => {
     if (path.extname(file) === ".json") {
@@ -67,7 +77,12 @@ function searchPatternInFolder(folderPath, pattern, searchComments) {
       try {
         const jsonData = JSON.parse(fileContent)
 
-        const matchedItems = searchPatternInJson(jsonData, pattern, searchComments)
+        const matchedItems = searchPatternInJson(
+          jsonData,
+          pattern,
+          searchComments,
+          category
+        )
         if (matchedItems.length > 0) {
           results.push(...matchedItems)
         }
@@ -81,7 +96,8 @@ function searchPatternInFolder(folderPath, pattern, searchComments) {
 const searchResults = searchPatternInFolder(
   folderPath,
   patternToSearch,
-  searchInComments
+  searchInComments,
+  categoryToFilter
 )
 const mapped = searchResults.map(item => ({
   title: item.title,
