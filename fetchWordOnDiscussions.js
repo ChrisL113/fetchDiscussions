@@ -65,5 +65,6 @@ const searchResults = searchWordInFolder(folderPath, wordToSearch)
 const mapped = searchResults.map(item => ({
   title: item.title,
   url: item.url,
+  category: item.category.name
 }))
 console.log(mapped)
