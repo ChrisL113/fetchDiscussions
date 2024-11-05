@@ -6,6 +6,7 @@ const args = process.argv.slice(2)
 let patternToSearch = null
 let searchInComments = false
 let categoryToFilter = null
+let categoryToFilterOut = null
 function showHelp() {
   console.log(`
 Usage:
@@ -24,6 +25,9 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === "-cat" && args[i + 1]) {
     categoryToFilter = args[i + 1]
     i++
+  } else if (args[i] === "-ncat" && args[i + 1]) {
+    categoryToFilterOut = args[i + 1]
+    i++
   } else if (args[i] === "-c") {
     searchInComments = true
   } else if (args[i] === "-h") {
@@ -40,11 +44,20 @@ if (!patternToSearch) {
   process.exit(1)
 }
 
-function searchPatternInJson(jsonArray, pattern, searchComments, category) {
+function searchPatternInJson(
+  jsonArray,
+  pattern,
+  searchComments,
+  category,
+  nocategory
+) {
   const lowerCasePattern = pattern.toLowerCase()
 
   return jsonArray.filter(item => {
-    if (category && !item.category.name.toLowerCase().includes(category)) {
+    if (
+      (category && !item.category.name.toLowerCase().includes(category)) ||
+      (nocategory && item.category.name.toLowerCase().includes(nocategory))
+    ) {
       return
     }
 
@@ -68,7 +81,13 @@ function searchPatternInJson(jsonArray, pattern, searchComments, category) {
     )
   })
 }
-function searchPatternInFolder(folderPath, pattern, searchComments, category) {
+function searchPatternInFolder(
+  folderPath,
+  pattern,
+  searchComments,
+  category,
+  nocategory
+) {
   const results = []
   fs.readdirSync(folderPath).forEach(file => {
     if (path.extname(file) === ".json") {
@@ -81,7 +100,8 @@ function searchPatternInFolder(folderPath, pattern, searchComments, category) {
           jsonData,
           pattern,
           searchComments,
-          category
+          category,
+          nocategory
         )
         if (matchedItems.length > 0) {
           results.push(...matchedItems)
@@ -97,7 +117,8 @@ const searchResults = searchPatternInFolder(
   folderPath,
   patternToSearch,
   searchInComments,
-  categoryToFilter
+  categoryToFilter,
+  categoryToFilterOut
 )
 const mapped = searchResults.map(item => ({
   title: item.title,
