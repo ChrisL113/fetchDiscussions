@@ -14,6 +14,7 @@ Usage:
 Options:
   -p <pattern>     Specify the pattern to search for in "title" and "bodytext" fields.
   -cat <category>  Limit Search to items within a category in specific.
+  -ncat <category> Skip a category in specific.
   -h               Show this help message.
   -c               Enable search in the comments
 `)
